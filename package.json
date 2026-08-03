@@ -1,0 +1,26 @@
+{
+  "name": "incident-hub",
+  "version": "1.0.0",
+  "description": "Incident Reporting Application",
+  "license": "ISC",
+  "author": "Uyai",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "axios": "^1.19.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.9.1"
+  }
+}

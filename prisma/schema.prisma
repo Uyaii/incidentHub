@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  maintainer
+  viewer
+}
+
+enum IncidentStatus {
+  investigating
+  identified
+  monitoring
+  resolved
+
+}
+
+enum IncidentSeverity{
+  low
+  medium
+  high
+}
+
+
+model User{
+  id String @id @default(uuid())
+  email String @unique
+  passwordHash String
+  fullName String
+  role Role @default(viewer)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Incidents Incident[] @relation("IncidentCreater")
+  updates IncidentUpdate[]
+  subscriptions Subscriptions[]
+}
+
+
+model Incident {
+  id String @id @default(uuid())
+  title String
+  slug String @unique
+  description String
+  status IncidentStatus @default(investigating)
+  severity IncidentSeverity @default(low)
+  isPublic Boolean @default(true)
+  createdById String
+  createdBy User @relation("IncidentCreator")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updates IncidentUpdate[]
+  subscriptions Subscription[]
+
+}
+
+
+
+model IncidentUpdate {
+  id String @id @default(uuid())
+  incidentId String
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  message String
+  status IncidentStatus?
+  createdById String
+  createdBy User @relation(fields: [createdById], references: [id])
+  createdAt DateTime @default(now())
+}
+
+
+model Subscription {
+  id String @id @default(uuid())
+  userId String
+  incidentId String
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+@@unique([userId,incidentId])
+}
