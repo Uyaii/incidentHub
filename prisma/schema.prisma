@@ -23,67 +23,61 @@ enum IncidentStatus {
   identified
   monitoring
   resolved
-
 }
 
-enum IncidentSeverity{
+enum IncidentSeverity {
   low
   medium
   high
 }
 
-
-model User{
-  id String @id @default(uuid())
-  email String @unique
-  passwordHash String
-  fullName String
-  role Role @default(viewer)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Incidents Incident[] @relation("IncidentCreater")
-  updates IncidentUpdate[]
-  subscriptions Subscriptions[]
+model User {
+  id            String           @id @default(uuid())
+  email         String           @unique
+  passwordHash  String
+  fullName      String
+  role          Role             @default(viewer)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  incidents     Incident[]       @relation("IncidentCreator")
+  updates       IncidentUpdate[]
+  subscriptions Subscription[]
 }
-
 
 model Incident {
-  id String @id @default(uuid())
-  title String
-  slug String @unique
-  description String
-  status IncidentStatus @default(investigating)
-  severity IncidentSeverity @default(low)
-  isPublic Boolean @default(true)
-  createdById String
-  createdBy User @relation("IncidentCreator")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  updates IncidentUpdate[]
+  id            String           @id @default(uuid())
+  title         String
+  slug          String           @unique
+  description   String
+  status        IncidentStatus   @default(investigating)
+  severity      IncidentSeverity @default(low)
+  isPublic      Boolean          @default(true)
+  createdById   String
+  createdBy     User             @relation("IncidentCreator", fields: [createdById], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  updates       IncidentUpdate[]
   subscriptions Subscription[]
-
 }
-
-
 
 model IncidentUpdate {
-  id String @id @default(uuid())
-  incidentId String
-  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-  message String
-  status IncidentStatus?
+  id          String          @id @default(uuid())
+  incidentId  String
+  incident    Incident        @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  message     String
+  status      IncidentStatus?
   createdById String
-  createdBy User @relation(fields: [createdById], references: [id])
-  createdAt DateTime @default(now())
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  createdAt   DateTime        @default(now())
 }
 
-
 model Subscription {
-  id String @id @default(uuid())
-  userId String
+  id         String   @id @default(uuid())
+  userId     String
   incidentId String
-  createdAt DateTime @default(now())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-@@unique([userId,incidentId])
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, incidentId])
 }
