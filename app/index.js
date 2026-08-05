@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import healthRoute from "./routes/health.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 app.use(express.json());
@@ -11,7 +12,9 @@ const port = process.env.PORT;
 
 const startServer = async () => {
   try {
-    app.listen(port, () => `Listening on port: ${port}`);
+  
+
+    app.listen(port, () => console.log(`Listening on port: ${port}`));
   } catch (error) {
     console.log(error);
   }
@@ -20,3 +23,4 @@ const startServer = async () => {
 startServer();
 
 app.use("/api/health", healthRoute);
+app.use("/auth", authRouter);
