@@ -37,7 +37,7 @@ subscriptionsRouter.post(
         data,
       });
     } catch (error) {
-      console.log(error);
+      return res.status(400).send({ status: "error", message: error });
     }
   },
 );
@@ -45,7 +45,6 @@ subscriptionsRouter.post(
 subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
   const { id } = req.params; //* Use subscription id not incident id
   const { full_name } = req.user;
-  console.log(id);
 
   try {
     if (!id)
