@@ -1,5 +1,5 @@
-import supabase from "../app/utils/db.js";
-import { verifyToken } from "../app/utils/tokens.js";
+import supabase from "../utils/db.js";
+import { verifyToken } from "../utils/tokens.js";
 
 const authMiddleware = async (req, res, next) => {
   try {

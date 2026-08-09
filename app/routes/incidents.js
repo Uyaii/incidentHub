@@ -1,6 +1,6 @@
 import { Router } from "express";
 import supabase from "../utils/db.js";
-import roleMiddleware from "../../middleware/role.js";
+import roleMiddleware from "../middleware/role.js";
 import { uuidv7 } from "uuidv7";
 import { slugify } from "../utils/helpers.js";
 
