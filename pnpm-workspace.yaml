@@ -1,5 +1,5 @@
 allowBuilds:
-  "@prisma/engines": true
+  '@prisma/engines': set this to true or false
   bcrypt: true
   msgpackr-extract: true
-  prisma: true
+  prisma: set this to true or false

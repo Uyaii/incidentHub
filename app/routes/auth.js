@@ -1,37 +1,120 @@
 import { Router } from "express";
-import { prisma } from "../config/db.js";
 import { uuidv7 } from "uuidv7";
 import bcrypt from "bcrypt";
+import supabase from "../utils/db.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  hashToken,
+} from "../utils/tokens.js";
 const authRouter = Router();
 
 authRouter.post("/register", async (req, res) => {
-  const { email, password, fullName } = req.body;
+  const { email, password, full_name } = req.body;
   try {
-    if (email === "" || password === "" || fullName === "") {
+    if (!email || !password || !full_name) {
       return res
         .status(400)
         .send({ status: "error", message: "Missing Field" });
     }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select()
+      .eq("email", email);
+
+    // ! User Already Exists
+    if (data.length >= 1) {
+      return res.status(201).send({
+        status: "success",
+        message: "Profile already exists",
+        data: data[0],
+      });
+    }
+    // ! Numeric Name Error Handling
+    if (typeof full_name !== "string") {
+      return res.status(422).send({
+        status: "error",
+        message: "Numeric Name instead of String",
+      });
+    }
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword,
-        fullName,
-      },
-    });
 
+    const { data: usersData, error: usersError } = await supabase
+      .from("users")
+      .upsert(
+        { id: uuidv7(), email, password_hash: hashedPassword, full_name },
+        { onConflict: "email" },
+      )
+      .select();
+    if (usersError)
+      return res.status(400).send({ status: "error", message: usersError });
     return res.status(201).send({
       status: "success",
       message: "User Created!",
-      user,
+      usersData,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
-    return res.send(error);
+    if (error instanceof Error) {
+      console.error(error.message);
+      console.error(error.stack);
+    }
+
+    return res.status(500).json(error);
   }
 });
 
+authRouter.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password)
+      return res
+        .status(400)
+        .send({ status: "error", message: "Missing Fields" });
+
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select()
+      .eq("email", email)
+      .single();
+    if (userError) return res.send({ status: "error", message: userError });
+
+    const pass = await bcrypt.compare(password, user.password_hash);
+
+    //! Invalid/Incorrect Password
+    if (!pass)
+      return res.send({ status: "error", message: "Invalid Password" });
+
+    const accessToken = generateAccessToken(user.id, user.role);
+    const refreshToken = generateRefreshToken(user.id);
+    const hashedToken = hashToken(refreshToken);
+
+    const { data, error } = await supabase
+      .from("tokens")
+      .upsert(
+        {
+          id: uuidv7(),
+          user_id: user.id,
+          token_hash: hashedToken,
+          expires_at: new Date(Date.now() + 5 * 60 * 1000),
+          created_at: new Date(),
+        },
+        { onConflict: "user_id" },
+      )
+      .select();
+
+    if (error) return res.status(400).send({ status: "error", message: error });
+    return res.status(200).send({
+      message: "Login Successful",
+      data,
+      user,
+      accessToken,
+    });
+  } catch (error) {
+    return res.send(error);
+  }
+});
 export default authRouter;
