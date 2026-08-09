@@ -5,7 +5,9 @@ import healthRoute from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import supabase from "./utils/db.js";
 import incidentsRouter from "./routes/incidents.js";
-import authMiddleware from "../middleware/auth.js";
+import authMiddleware from "./middleware/auth.js";
+// import authMiddleware from './'
+import subscriptionsRouter from "./routes/subscriptions.js";
 
 const app = express();
 app.use(express.json());
@@ -34,3 +36,4 @@ startServer();
 app.use("/api/health", healthRoute);
 app.use("/auth", authRouter);
 app.use("/api/incidents", authMiddleware, incidentsRouter);
+app.use("/api", authMiddleware, subscriptionsRouter);

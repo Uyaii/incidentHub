@@ -22,6 +22,7 @@ const authMiddleware = async (req, res, next) => {
       .select()
       .eq("id", user.id)
       .single();
+    console.log(data);
 
     if (!data)
       return res
