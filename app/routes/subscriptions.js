@@ -44,7 +44,7 @@ subscriptionsRouter.post(
 
 subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
   const { id } = req.params; //* Use subscription id not incident id
-  const { full_name } = req.user;
+  const { id: userId, full_name } = req.user;
 
   try {
     if (!id)
@@ -52,13 +52,13 @@ subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
         .status(404)
         .send({ status: "error", message: "ID Not Provided" });
 
-    const response = await supabase
+    const { data, error } = await supabase
       .from("subscriptions")
       .delete()
-      .eq("id", id)
+      .match({ user_id: userId, incident_id: id })
       .select();
 
-    if (!response)
+    if (error)
       return res
         .status(400)
         .send({ status: "error", message: "Incident not Found" });
@@ -66,7 +66,7 @@ subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
     return res.status(200).send({
       status: "success",
       message: `User ${full_name} successfully unsubscribed to Incident`,
-      response,
+      data,
     });
   } catch (error) {
     return res.status(400).send({ status: "error", message: error });

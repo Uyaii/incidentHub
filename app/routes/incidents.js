@@ -19,7 +19,7 @@ incidentsRouter.get("/", async (req, res) => {
 
 incidentsRouter.get("/:id", async (req, res) => {
   const { id } = req.params;
-  return res.send(id);
+
   const { data, error } = await supabase
     .from("incidents")
     .select()
@@ -115,6 +115,40 @@ incidentsRouter.patch(
       return res
         .status(200)
         .send({ status: "success", message: "Incident Updated", data });
+    } catch (error) {
+      return res.status(400).send({ status: "error", message: error });
+    }
+  },
+);
+
+incidentsRouter.delete(
+  "/:id",
+  roleMiddleware(["admin", "maintainer"]),
+  async (req, res) => {
+    const { id } = req.params;
+    const { id: userId, full_name } = req.user;
+
+    try {
+      if (!id)
+        return res
+          .status(404)
+          .send({ status: "error", message: "ID Not Provided" });
+
+      const { data, error } = await supabase
+        .from("incidents")
+        .delete()
+        .eq("id", id)
+        .select();
+      if (data.length <= 0)
+        return res
+          .status(404)
+          .send({ status: "error", message: "Incident not Found", error });
+
+      return res.status(200).send({
+        status: "success",
+        message: `Successfully Deleted Incident`,
+        data,
+      });
     } catch (error) {
       return res.status(400).send({ status: "error", message: error });
     }
