@@ -1,14 +1,8 @@
-import { createClient } from "redis";
+import IORedis from "ioredis";
+import dotenv from "dotenv";
 
-const client = createClient({
-  url: process.env.REDIS_URL,
+dotenv.config();
+
+export const redisClient = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
 });
-
-client.on("error", function (err) {
-  throw err;
-});
-await client.connect();
-await client.set("foo", "bar");
-
-// Disconnect after usage
-await client.disconnect();

@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import healthRoute from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import supabase from "./utils/db.js";
@@ -9,6 +8,7 @@ import authMiddleware from "./middleware/auth.js";
 // import authMiddleware from './'
 import subscriptionsRouter from "./routes/subscriptions.js";
 import updatesRouter from "./routes/updates.js";
+import dotenv from "dotenv";
 
 const app = express();
 app.use(express.json());
@@ -19,6 +19,7 @@ const port = process.env.PORT;
 const startServer = async () => {
   try {
     const { data, error } = await supabase.from("users").select("*");
+
     if (error) {
       console.log("DB connection failed:", error.message);
     } else {

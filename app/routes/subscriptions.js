@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/auth.js";
 import supabase from "../utils/db.js";
-import { uuidv4 } from "uuidv7";
+
 import { uuidv7 } from "uuidv7";
 
 const subscriptionsRouter = Router();
@@ -14,9 +14,7 @@ subscriptionsRouter.post(
     const { id: userId, full_name } = req.user;
     try {
       if (!id || !userId)
-        return res
-          .status(404)
-          .send({ status: "error", message: "ID Not Provided" });
+        return res.status(404).send({ status: "error", message: "ID Not Provided" });
 
       const subscribeData = {
         id: uuidv7(),
@@ -28,8 +26,7 @@ subscriptionsRouter.post(
         .from("subscriptions")
         .insert(subscribeData)
         .select();
-      if (error)
-        return res.status(400).send({ status: "error", message: error });
+      if (error) return res.status(400).send({ status: "error", message: error });
 
       return res.status(200).send({
         status: "success",
@@ -43,14 +40,11 @@ subscriptionsRouter.post(
 );
 
 subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
-  const { id } = req.params; //* Use subscription id not incident id
+  const { id } = req.params; //* Use incident id
   const { id: userId, full_name } = req.user;
 
   try {
-    if (!id)
-      return res
-        .status(404)
-        .send({ status: "error", message: "ID Not Provided" });
+    if (!id) return res.status(404).send({ status: "error", message: "ID Not Provided" });
 
     const { data, error } = await supabase
       .from("subscriptions")
@@ -59,9 +53,7 @@ subscriptionsRouter.delete("/incidents/:id/unsubscribe", async (req, res) => {
       .select();
 
     if (error)
-      return res
-        .status(400)
-        .send({ status: "error", message: "Incident not Found" });
+      return res.status(400).send({ status: "error", message: "Incident not Found" });
 
     return res.status(200).send({
       status: "success",
@@ -77,9 +69,7 @@ subscriptionsRouter.get("/me/subscriptions", async (req, res) => {
   const { id: userId } = req.user;
   try {
     if (!userId)
-      return res
-        .status(404)
-        .send({ status: "error", message: "ID Not Provided" });
+      return res.status(404).send({ status: "error", message: "ID Not Provided" });
 
     const { data, error } = await supabase
       .from("subscriptions")
@@ -87,9 +77,7 @@ subscriptionsRouter.get("/me/subscriptions", async (req, res) => {
       .eq("user_id", userId);
 
     if (error) return res.status(400).send({ status: "error", message: error });
-    return res
-      .status(200)
-      .send({ status: "success", count: data.length, data });
+    return res.status(200).send({ status: "success", count: data.length, data });
   } catch (error) {
     return res.status(400).send({ status: "error", message: error });
   }

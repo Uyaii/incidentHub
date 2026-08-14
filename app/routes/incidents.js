@@ -11,7 +11,9 @@ incidentsRouter.get("/", async (req, res) => {
     const { data, error } = await supabase.from("incidents").select();
     if (error) return res.send({ status: "error", message: error });
 
-    res.status(200).send({ status: "success", message: data });
+    res
+      .status(200)
+      .send({ status: "success", count: data.length, message: data });
   } catch (error) {
     return res.send(error);
   }
@@ -19,11 +21,20 @@ incidentsRouter.get("/", async (req, res) => {
 
 incidentsRouter.get("/:id", async (req, res) => {
   const { id } = req.params;
+  try {
+    if (!id)
+      return res.status(404).send({ status: "error", message: "ID Not Found" });
+    const { data, error } = await supabase
+      .from("incidents")
+      .select()
+      .eq("id", id);
 
-  const { data, error } = await supabase
-    .from("incidents")
-    .select()
-    .eq("id", id);
+    if (error) return res.status(404).send({ status: "error", message: error });
+
+    return res.status(200).send({ status: "success", message: data });
+  } catch (error) {
+    return res.status(404).send({ status: "error", message: error });
+  }
 });
 
 incidentsRouter.post(
@@ -84,6 +95,7 @@ incidentsRouter.patch(
         return res
           .status(400)
           .send({ status: "error", message: "ID Not Passed" });
+      console.log(incidentData);
 
       // !  let formattedSlug = null;<== Using this is dangerous because if its null and title is undefined too then null will be inputed into the database but if its undefined the value will be dropped and wont affect the db
       let formattedSlug = undefined;
@@ -103,20 +115,22 @@ incidentsRouter.patch(
         .update(extractedData)
         .eq("id", id)
         .select();
-      console.log(data);
 
-      if (!data)
+      console.log(error);
+      console.log(data.length);
+      if (data.length <= 0)
         return res
           .status(400)
-          .send({ status: "error", message: "No Incident Found" });
+          .send({ status: "error1", message: "No Incident Found" });
+
       if (error)
-        return res.status(400).send({ status: "error", message: error });
+        return res.status(400).send({ status: "error2", message: error });
 
       return res
         .status(200)
         .send({ status: "success", message: "Incident Updated", data });
     } catch (error) {
-      return res.status(400).send({ status: "error", message: error });
+      return res.status(400).send({ status: "error5", message: error });
     }
   },
 );

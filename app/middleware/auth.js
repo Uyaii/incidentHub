@@ -22,7 +22,6 @@ const authMiddleware = async (req, res, next) => {
       .select()
       .eq("id", user.id)
       .single();
-    console.log(data);
 
     if (!data)
       return res
@@ -31,7 +30,6 @@ const authMiddleware = async (req, res, next) => {
     if (error) return res.status(404).send({ status: "error", message: error });
 
     req.user = data;
-    console.log(req.user);
   } catch (error) {
     return res.send({ error, message: "flick" });
   }

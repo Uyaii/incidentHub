@@ -2,6 +2,8 @@ import { Router } from "express";
 import { uuidv7 } from "uuidv7";
 import supabase from "../utils/db.js";
 import roleMiddleware from "../middleware/role.js";
+import { Queue } from "bullmq";
+import { notificationsQueue } from "../bullmq/bullmq.js";
 
 const updatesRouter = Router();
 
@@ -52,10 +54,16 @@ updatesRouter.post(
       const { data, error } = await supabase
         .from("incident_updates")
         .insert(update)
-        .select();
+        .select()
+        .single();
       if (error)
         return res.status(400).send({ status: "error", message: error });
-
+      
+      // ! Notification queues
+      await notificationsQueue.add("notifications", {
+        incidentId: data.incident_id,
+      });
+      
       return res.status(200).send({
         status: "success",
         message: `Update Posted`,
