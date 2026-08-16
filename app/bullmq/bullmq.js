@@ -1,5 +1,5 @@
 import { Worker, Queue } from "bullmq";
-// import redisClient from "../utils/redis.js";
+
 import { redisClient } from "../utils/redis.js";
 
 export const connection = redisClient;

@@ -1,12 +1,13 @@
 # Incident Hub Todo List
 
 ## Now
-- [ ] text
+- [ ] Finish socket.io implementation
 - [ ] 
 
 
 ## Next
-- [ ] text
+- [ ] Extract controllers and create general controllers like "get curent logged in user" etc 
+- [ ] 
 
 
 

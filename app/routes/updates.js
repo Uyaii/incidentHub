@@ -4,6 +4,7 @@ import supabase from "../utils/db.js";
 import roleMiddleware from "../middleware/role.js";
 import { Queue } from "bullmq";
 import { notificationsQueue } from "../bullmq/bullmq.js";
+import { getIO } from "../utils/socketIO.js";
 
 const updatesRouter = Router();
 
@@ -16,9 +17,7 @@ updatesRouter.post(
     const { message, status } = req.body;
     try {
       if (!id || !userId)
-        return res
-          .status(404)
-          .send({ status: "error", message: "ID Not Provided" });
+        return res.status(404).send({ status: "error", message: "ID Not Provided" });
 
       let currentStatus = status;
 
@@ -28,9 +27,7 @@ updatesRouter.post(
         .eq("id", id)
         .single();
       if (incidentError)
-        return res
-          .status(400)
-          .send({ status: "error", message: incidentError });
+        return res.status(400).send({ status: "error", message: incidentError });
 
       if (status !== undefined) {
         const { data, error } = await supabase
@@ -39,8 +36,7 @@ updatesRouter.post(
           .eq("id", id)
           .select();
 
-        if (error)
-          return res.status(400).send({ status: "error", message: error });
+        if (error) return res.status(400).send({ status: "error", message: error });
       }
       const update = {
         id: uuidv7(),
@@ -56,14 +52,18 @@ updatesRouter.post(
         .insert(update)
         .select()
         .single();
-      if (error)
-        return res.status(400).send({ status: "error", message: error });
-      
+      if (error) return res.status(400).send({ status: "error", message: error });
+
       // ! Notification queues
       await notificationsQueue.add("notifications", {
         incidentId: data.incident_id,
+        updatedByID: userId,
       });
-      
+
+      const io = getIO();
+
+      io.to(`incident:${id}`).emit("incident updated", data);
+
       return res.status(200).send({
         status: "success",
         message: `Update Posted`,
@@ -81,9 +81,7 @@ updatesRouter.get("/incidents/:id/updates", async (req, res) => {
   const { id: userId } = req.user;
   try {
     if (!id || !userId)
-      return res
-        .status(404)
-        .send({ status: "error", message: "ID Not Provided" });
+      return res.status(404).send({ status: "error", message: "ID Not Provided" });
 
     const { data, error } = await supabase
       .from("incident_updates")
