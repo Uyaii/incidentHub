@@ -32,7 +32,8 @@ const startServer = async () => {
     } else {
       console.log("DB connected successfully");
     }
-    server.listen(port, () => { // when using socket.io replace app.listen with server.listen 
+    server.listen(port, () => {
+      // when using socket.io replace app.listen with server.listen
       console.log(`Server running on port ${port}`);
     });
   } catch (error) {

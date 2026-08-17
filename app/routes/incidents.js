@@ -67,6 +67,7 @@ incidentsRouter.post("/", roleMiddleware(["admin", "maintainer"]), async (req, r
       .select();
 
     if (error) return res.status(400).send({ status: "error", message: error });
+    
     return res.status(200).send({ status: "success", message: "Incident Created", data });
   } catch (error) {
     return res.status(400).send({ status: "error", message: error });
